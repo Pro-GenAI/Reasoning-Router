@@ -5,6 +5,7 @@
 
 [![LangChain](https://img.shields.io/badge/LangChain-ffffff?style=for-the-badge&logo=langchain&logoColor=white&color=blueviolet)]()
 [![LangGraph](https://img.shields.io/badge/LangGraph-ffffff?style=for-the-badge&logo=langgraph&logoColor=white&color=darkgreen)]()
+[![LangSmith](https://img.shields.io/badge/LangSmith-ffffff?style=for-the-badge&logo=langchain&logoColor=white&color=orange)]()
 [![AI](https://img.shields.io/badge/AI-C21B00?style=for-the-badge&logo=openaigym&logoColor=white)]()
 [![LLMs](https://img.shields.io/badge/LLMs-1A535C?style=for-the-badge&logo=openai&logoColor=white)]()
 [![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=ffdd54)]()
