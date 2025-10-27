@@ -1,4 +1,4 @@
-<img src="./assets/project_logo.jpg" alt="Project logo" width="270px" align="left"/>
+<img src="./assets/project_logo.jpg" alt="Project logo" width="260px" align="left"/>
 <!-- $ convert logo_large.png -resize 270x270 project_logo.jpg -->
 
 # Reasoning Router: Dynamic Multi-Strategy Reasoning with LangGraph
