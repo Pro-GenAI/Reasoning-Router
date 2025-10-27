@@ -1,0 +1,10 @@
+{
+  "dockerfile_lines": [],
+  "graphs": {
+    "reasoning_router": "./reasoning_router.py:graph"
+  },
+  "env": "../../.env",
+  "dependencies": [
+    "."
+  ]
+}

@@ -1,0 +1,8 @@
+langgraph
+langgraph-prebuilt
+langchain-core
+langchain-community
+langchain-openai
+python-dotenv
+datasets
+langchain[evaluation]
