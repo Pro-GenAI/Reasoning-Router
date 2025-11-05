@@ -1,7 +1,7 @@
 <img src="./assets/project_logo.jpg" alt="Project logo" width="260px" align="left"/>
 <!-- $ convert logo_large.png -resize 270x270 project_logo.jpg -->
 
-# Reasoning Router: Dynamic Multi-Strategy Reasoning with LangGraph
+# Reasoning Router: Dynamic Multi-Strategy Reasoning for Robust Multi-Step Problem Solving
 
 [![LangChain](https://img.shields.io/badge/LangChain-ffffff?style=for-the-badge&logo=langchain&logoColor=white&color=blueviolet)]()
 [![LangGraph](https://img.shields.io/badge/LangGraph-ffffff?style=for-the-badge&logo=langgraph&logoColor=white&color=darkgreen)]()
