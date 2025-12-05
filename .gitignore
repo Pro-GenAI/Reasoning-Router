@@ -5,3 +5,6 @@ venv/
 __pycache__/
 gsm8k_cache_*.json
 unused/
+*.egg-info/
+*.bkp
+.deepeval/

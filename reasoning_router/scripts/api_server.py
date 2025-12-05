@@ -8,7 +8,8 @@ import openai
 from pydantic import BaseModel
 import uvicorn
 
-from reasoning_router.reasoning_router import get_router_response, model
+from reasoning_router.router import get_router_response, model
+from reasoning_router.utils.llm_utils import get_response
 
 
 BACKEND_BASE_URL = os.getenv("BACKEND_BASE_URL")
@@ -16,7 +17,6 @@ BACKEND_BASE_URL = os.getenv("BACKEND_BASE_URL")
 model_routed = f"{model}-ROUTED"
 
 app = FastAPI()
-openai_client = openai.OpenAI()
 
 
 class ChatCompletionRequest(BaseModel):
@@ -25,30 +25,6 @@ class ChatCompletionRequest(BaseModel):
     max_tokens: Optional[int] = 512
     temperature: Optional[float] = 0.7
 
-
-def get_response(messages: list[dict[str, str]]) -> str:
-    """Simple response generator for demo purposes.
-
-    If the model's response contains a JSON object with an `action` key, we will
-    route it to the local action classifier and return a short classification
-    summary. Otherwise, return the model's response.
-    """
-    for attempt in range(1):
-        try:
-            response = openai_client.chat.completions.create(
-                messages=messages,  # type: ignore
-                model=model,
-                max_tokens=512,
-                temperature=0.7,
-            )
-            if not response:
-                continue
-            message = response.choices[0].message.content
-            return message or ""
-        except openai.BadRequestError as ex:
-            print(f"Error getting response (attempt {attempt + 1}): {ex}")
-            time.sleep(1)
-    return "Error: Unable to get response."
 
 
 @app.post("/v1/chat/completions")
