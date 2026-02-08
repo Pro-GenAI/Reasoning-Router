@@ -17,5 +17,8 @@ benchmark = LogiQA(tasks=tasks, n_problems_per_task=ROWS_LIMIT_PER_TASK)
 router_benchmark = LogiQA(tasks=tasks, n_problems_per_task=ROWS_LIMIT_PER_TASK)
 
 
+def main():
+    evaluate_benchmark(benchmark, router_benchmark, eval_name="LogiQA")
+
 if __name__ == "__main__":
-    evaluate_benchmark(benchmark, router_benchmark)
+    main()

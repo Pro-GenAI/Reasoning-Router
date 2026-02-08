@@ -1,5 +1,7 @@
 import os
 import json
+from pathlib import Path
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -24,6 +26,7 @@ class StrategyNet(nn.Module):
         return x
 
 
+# MODEL_DIR = Path(__file__).parent.parent / "models" / "strategy_classifier"
 MODEL_DIR = "models/strategy_classifier"
 
 

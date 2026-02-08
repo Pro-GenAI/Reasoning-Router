@@ -20,9 +20,9 @@ def objective(trial):
     hyperparams = {
         "batch_size": trial.suggest_categorical("batch_size", [16, 32, 64]),
         "learning_rate": trial.suggest_float("learning_rate", 1e-4, 1e-2, log=True),
-        "num_epochs": trial.suggest_int("num_epochs", 5, 20),
+        "num_epochs": trial.suggest_int("num_epochs", 5, 10, 20),
         "hidden_dim": trial.suggest_categorical("hidden_dim", [256, 512, 1024]),
-        "dropout": trial.suggest_float("dropout", 0.0, 0.5),
+        "dropout": trial.suggest_float("dropout", 0.0),  # , 0.5
     }
 
     # Train model

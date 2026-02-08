@@ -21,5 +21,8 @@ router_benchmark = TruthfulQA(
 )
 
 
+def main():
+    evaluate_benchmark(benchmark, router_benchmark, eval_name="TruthfulQA")
+
 if __name__ == "__main__":
-    evaluate_benchmark(benchmark, router_benchmark)
+    main()

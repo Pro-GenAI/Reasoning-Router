@@ -10,5 +10,9 @@ benchmark = ARC(n_problems=ROWS_LIMIT, mode=ARCMode.CHALLENGE)
 router_benchmark = ARC(n_problems=ROWS_LIMIT, mode=ARCMode.CHALLENGE)
 
 
+def main():
+    evaluate_benchmark(benchmark, router_benchmark, eval_name="ARC")
+
+
 if __name__ == "__main__":
-    evaluate_benchmark(benchmark, router_benchmark)
+    main()

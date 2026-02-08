@@ -1,4 +1,5 @@
 from typing import Any, Literal, TypedDict, List
+import time
 
 from langchain_core.globals import set_llm_cache
 from langchain_core.prompts import ChatPromptTemplate
@@ -7,6 +8,22 @@ from langgraph.graph import StateGraph, START, END
 
 from reasoning_router.utils.llm_utils import llm, cache
 from reasoning_router.utils.strategy_selector import classifier
+
+
+def _invoke_with_retries(chain, payload: dict, retries: int = 2, delay_s: float = 1.0):
+    """Invoke an LLM chain with basic retries for transient network/timeouts."""
+    last_exc: Exception | None = None
+    for attempt in range(retries + 1):
+        try:
+            return chain.invoke(payload)
+        except Exception as exc:
+            last_exc = exc
+            if attempt >= retries:
+                raise
+            set_llm_cache(None)
+            time.sleep(delay_s)
+            set_llm_cache(cache)
+    raise last_exc  # type: ignore[misc]
 
 
 # Define the state
@@ -25,10 +42,10 @@ CHAIN_OF_THOUGHT_PROMPT = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            """You are an expert problem solver using Chain-of-Thought reasoning.
-Break down the problem step by step, showing your reasoning process clearly.
-For each step, explain your thought process and how you arrived at that conclusion.
-Generate detailed reasoning steps without providing the final answer.""",
+            """You are an expert problem solver.
+Write reasoning notes based on the user's problem.
+Think step-by-step and write your thoughts.
+Do NOT provide the final answer in this step.""",
         ),
         ("human", "{problem}"),
     ]
@@ -41,7 +58,7 @@ TREE_OF_THOUGHT_PROMPT = ChatPromptTemplate.from_messages(
             """You are using Tree-of-Thought reasoning.
 Consider multiple possible approaches and branches of reasoning.
 Explore different paths, evaluate their feasibility, and choose the best one.
-Show the tree structure of your thinking as detailed reasoning steps.""",
+Write short internal notes (max 8 lines). Do NOT provide the final answer.""",
         ),
         ("human", "{problem}"),
     ]
@@ -52,9 +69,9 @@ SELF_REFLECTION_PROMPT = ChatPromptTemplate.from_messages(
         (
             "system",
             """Use self-reflection reasoning.
-First, provide an initial answer, then critically examine your own reasoning.
+First, note a tentative answer (without committing), then critically examine it.
 Identify potential flaws, biases, or missing information.
-Generate detailed thoughts about the reflection process.""",
+Write short internal notes (max 8 lines). Do NOT provide the final answer.""",
         ),
         ("human", "{problem}"),
     ]
@@ -67,7 +84,7 @@ DEBATE_PROMPT = ChatPromptTemplate.from_messages(
             """Engage in internal debate reasoning.
 Present arguments for different perspectives on the problem.
 Have a 'pro' and 'con' discussion internally.
-Generate detailed thoughts from the debate without final synthesis.""",
+Write short internal notes (max 10 lines). Do NOT provide the final answer.""",
         ),
         ("human", "{problem}"),
     ]
@@ -85,7 +102,7 @@ Consider the problem from six different perspectives:
 4. Yellow Hat: Benefits and optimism
 5. Green Hat: Creativity and alternatives
 6. Blue Hat: Process and overview
-Generate detailed thoughts from each hat's perspective.""",
+Write very short notes (1 line per hat). Do NOT provide the final answer.""",
         ),
         ("human", "{problem}"),
     ]
@@ -96,8 +113,10 @@ RESPONDER_PROMPT = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            """You are a synthesizer that takes detailed reasoning thoughts and generates a clear, concise final answer.
-Based on the reasoning steps provided, synthesize the information and provide the final answer to the original problem.""",
+            """You are a synthesizer that takes intermediate reasoning notes and produces the final answer.
+Return only the final answer (no extra words, no explanation).
+Follow the output format instructions if provided.
+""",
         ),
         (
             "human",
@@ -141,10 +160,10 @@ def apply_strategy(state: ReasoningState) -> ReasoningState:
     prompt = prompts.get(strategy, CHAIN_OF_THOUGHT_PROMPT)
     chain = prompt | llm
 
-    response = chain.invoke({"problem": problem})
+    response = _invoke_with_retries(chain, {"problem": problem})
     if not response.content:
         set_llm_cache(None)
-        response = chain.invoke({"problem": problem})
+        response = _invoke_with_retries(chain, {"problem": problem})
         set_llm_cache(cache)
     content = str(response.content) if response.content else ""
 
@@ -163,23 +182,19 @@ def responder_node(state: ReasoningState) -> ReasoningState:
 
     chain = RESPONDER_PROMPT | llm
     steps_text = "\n".join(reasoning_steps)
-    response = chain.invoke(
-        {
-            "problem": problem,
-            "steps": steps_text,
-            "output_format": state["output_format"],
-        }
-    )
+    response = _invoke_with_retries(chain, {
+        "problem": problem,
+        "steps": steps_text,
+        "output_format": state["output_format"],
+    })
 
     if not response.content:
         set_llm_cache(None)
-        response = chain.invoke(
-            {
-                "problem": problem,
-                "steps": steps_text,
-                "output_format": state["output_format"],
-            }
-        )
+        response = _invoke_with_retries(chain, {
+            "problem": problem,
+            "steps": steps_text,
+            "output_format": state["output_format"],
+        })
         set_llm_cache(cache)
     content = str(response.content) if response.content else ""
 
