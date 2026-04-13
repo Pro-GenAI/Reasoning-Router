@@ -1,1 +1,1 @@
-{"input_dim": 384, "hidden_dim": 1024, "num_classes": 4, "dropout": 0.17}
+{"input_dim": 384, "hidden_dim": 512, "num_classes": 4, "dropout": 0.06696746953390426}

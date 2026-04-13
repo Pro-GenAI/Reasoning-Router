@@ -20,9 +20,7 @@ class CustomModel(DeepEvalBaseLLM):
 
     def generate(self, prompt: str, *args, **kwargs):
         self.counter += 1
-        print(f"Generating response {self.counter}...")
-        # if self.counter == 16:
-        #     return None  # Simulate a failure on the 16th call
+        # print(f"\n Generating response {self.counter}...")
 
         if self.routed:
             text = get_router_response(prompt, thread_id=str(self.counter))

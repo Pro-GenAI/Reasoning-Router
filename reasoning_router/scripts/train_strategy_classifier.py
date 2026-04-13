@@ -4,6 +4,7 @@ import json
 import os
 
 from datasets import load_dataset
+import optuna
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
@@ -202,6 +203,50 @@ def save_model(model, hyperparams=HYPERPARAMS, model_dir=MODEL_DIR):
         json.dump(hyperparams, f)
 
 
+# Hyperparameter tuning with Optuna
+
+# Global data
+texts = None
+labels = None
+
+
+def objective(trial):
+    global texts, labels
+    if texts is None:
+        texts, labels = load_and_prepare_data()
+
+    # Suggest hyperparameters
+    hyperparams = {
+        "batch_size": trial.suggest_categorical("batch_size", [16, 32, 64]),
+        "learning_rate": trial.suggest_float("learning_rate", 1e-4, 1e-2, log=True),
+        "num_epochs": trial.suggest_int("num_epochs", 5, 10, 20),
+        "hidden_dim": trial.suggest_categorical("hidden_dim", [256, 512, 1024]),
+        "dropout": trial.suggest_float("dropout", 0.0, 0.5),
+    }
+
+    # Train model
+    _, accuracy = train_classifier(texts, labels, hyperparams)
+
+    return accuracy
+
+
+def hyperparam_tuning():
+    study = optuna.create_study(direction="maximize")
+    study.optimize(objective, n_trials=50)  # type: ignore
+
+    print("Best hyperparameters:", study.best_params)
+    print("Best value:", study.best_value)
+
+    # Train final model with best hyperparams
+    global texts, labels
+    if texts is None:
+        texts, labels = load_and_prepare_data()
+    best_hyperparams = study.best_params
+    model, _ = train_classifier(texts, labels, best_hyperparams)
+    save_model(model, best_hyperparams)
+    print("Best model saved!")
+
+
 if __name__ == "__main__":
     texts, labels = load_and_prepare_data()
     print(f"Loaded {len(texts)} samples")
@@ -209,4 +254,5 @@ if __name__ == "__main__":
     model, accuracy = train_classifier(texts, labels)
     save_model(model)
     print("Model saved!")
-    print(f"Final accuracy: {accuracy:.4f}")
+    print(f"Accuracy: {accuracy:.4f}")
+    hyperparam_tuning()

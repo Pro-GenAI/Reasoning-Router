@@ -10,7 +10,7 @@ from reasoning_router.utils.llm_utils import llm, cache
 from reasoning_router.utils.strategy_selector import classifier
 
 
-def _invoke_with_retries(chain, payload: dict, retries: int = 2, delay_s: float = 1.0):
+def _invoke_with_retries(chain, payload: dict, retries: int = 2, delay_s: float = 0.01):
     """Invoke an LLM chain with basic retries for transient network/timeouts."""
     last_exc: Exception | None = None
     for attempt in range(retries + 1):

@@ -5,7 +5,7 @@ import openai
 from dotenv import load_dotenv
 from langchain.agents import create_agent
 from langchain_community.cache import SQLiteCache
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI, AzureChatOpenAI
 import numpy as np
 
 
@@ -28,6 +28,12 @@ def encode(texts: list[str] | str) -> np.ndarray:
     )
     return np.array([data.embedding for data in responses.data])
 
+try:
+    encode("test")
+except Exception as e:
+    print("Error initializing embedding client:", e)
+    raise e
+
 
 model = os.getenv("OPENAI_MODEL", "")
 if not model:
@@ -37,14 +43,22 @@ if not model:
 # Set up persistent caching for LLM responses using SQLite
 cache = SQLiteCache(database_path=".langchain_cache.db")
 
-llm = ChatOpenAI(
-    model=model,
-    temperature=0.7,
-    cache=cache,
-    max_completion_tokens=512,
-    timeout=30,
-    max_retries=3,
-)
+if AZURE_OPENAI_ENDPOINT := os.getenv("AZURE_OPENAI_ENDPOINT"):
+    llm = AzureChatOpenAI(
+        azure_deployment=model,
+        cache=cache,
+        max_completion_tokens=512,
+        timeout=120,
+        max_retries=1,
+    )
+else:
+    llm = ChatOpenAI(
+        model=model,
+        cache=cache,
+        max_completion_tokens=512,
+        timeout=120,
+        max_retries=1,
+    )
 llm_no_cache = llm.__copy__()
 llm_no_cache.cache = None
 
